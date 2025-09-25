@@ -11,8 +11,8 @@ import {
 	CarouselApi
 } from '@/components/ui/carousel'
 import Image from 'next/image'
-import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { X } from './icons'
 
 interface GalleryModalProps {
 	images: string[]
@@ -59,7 +59,7 @@ export default function GalleryModal({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-white dark:bg-black shadow-md border-0 [&>button:last-child]:hidden">
+			<DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-white dark:bg-black shadow-md border-0 [&>button:last-child]:hidden mt-3">
 				<Carousel
 					className="w-full relative"
 					setApi={setApi}

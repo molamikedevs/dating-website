@@ -25,7 +25,7 @@ const ProfileAbout = ({
 					placeholder="Tell people about yourself…"
 				/>
 			) : (
-				<p className="text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
+				<p className="text-muted-foreground whitespace-pre-wrap">
 					{draft.bio || 'No bio yet.'}
 				</p>
 			)}

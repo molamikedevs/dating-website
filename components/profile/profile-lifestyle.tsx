@@ -26,9 +26,9 @@ const ProfileLifestyle = ({
 	const relationship_goals = draft?.relationship_goals
 
 	return (
-		<div className="bg-white dark:bg-neutral-900 shadow rounded-xl p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+		<div className="bg-white dark:bg-neutral-900 shadow rounded-xl p-6 grid grid-cols-1 sm:grid-cols-3">
 			<div>
-				<Label className="mb-1 block">Smoking</Label>
+				<Label className="mb-2 block">Smoking</Label>
 				{isEditing ? (
 					<Select
 						value={smoking || undefined}
@@ -45,12 +45,14 @@ const ProfileLifestyle = ({
 						</SelectContent>
 					</Select>
 				) : (
-					<p className="text-gray-700 dark:text-gray-200">{smoking || '—'}</p>
+					<p className="text-muted-foreground dark:text-neutral-500 font-semibold text-sm">
+						{smoking || '—'}
+					</p>
 				)}
 			</div>
 
 			<div>
-				<Label className="mb-1 block">Drinking</Label>
+				<Label className="mb-2 block">Drinking</Label>
 				{isEditing ? (
 					<Select
 						value={drinking || undefined}
@@ -67,12 +69,14 @@ const ProfileLifestyle = ({
 						</SelectContent>
 					</Select>
 				) : (
-					<p className="text-gray-700 dark:text-gray-200">{drinking || '—'}</p>
+					<p className="text-muted-foreground dark:text-neutral-500 font-semibold text-sm">
+						{drinking || '—'}
+					</p>
 				)}
 			</div>
 
 			<div>
-				<Label className="mb-1 block">Relationship Goals</Label>
+				<Label className="mb-2 block">Looking For</Label>
 				{isEditing ? (
 					<Select
 						value={relationship_goals || undefined}
@@ -89,7 +93,7 @@ const ProfileLifestyle = ({
 						</SelectContent>
 					</Select>
 				) : (
-					<p className="text-gray-700 dark:text-gray-200">
+					<p className="text-muted-foreground dark:text-neutral-500 font-semibold text-sm">
 						{relationship_goals || '—'}
 					</p>
 				)}

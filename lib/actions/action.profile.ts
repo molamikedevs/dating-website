@@ -29,6 +29,23 @@ export async function getCurrentUserProfile() {
 	return profile
 }
 
+// Get profile by ID (for public profiles)
+export async function getProfileById(profileId: string): Promise<Profile | null> {
+	const supabase = await createClient()
+	const { data: profile, error } = await supabase
+		.from('users')
+		.select('*')
+		.eq('id', profileId)
+		.single()
+
+	if (error) {
+		console.error('Profile fetch error:', error)
+		return null
+	}
+
+	return profile
+}
+
 export async function updateProfile(
 	updates: Partial<Profile>
 ): Promise<Profile> {
@@ -49,6 +66,38 @@ export async function updateProfile(
 	return profile
 }
 
+
+export async function uploadToBucket(
+	file: File,
+	bucket: 'profile_images' | 'profile_avatars'
+): Promise<string> {
+	const supabase = await createClient()
+
+	const {
+		data: { user },
+	} = await supabase.auth.getUser()
+	if (!user) throw new Error('Not authenticated')
+
+	const arrayBuffer = await file.arrayBuffer()
+	const fileExt = file.name.split('.').pop()
+	const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`
+
+	const { data, error } = await supabase.storage
+		.from(bucket)
+		.upload(fileName, arrayBuffer, {
+			contentType: file.type,
+		})
+
+	if (error) throw error
+
+	const {
+		data: { publicUrl },
+	} = supabase.storage.from(bucket).getPublicUrl(data.path)
+
+	return publicUrl
+}
+
+
 export async function deleteGalleryImage(imageUrls: string[]): Promise<void> {
 	const supabase = await createClient()
 
@@ -58,7 +107,7 @@ export async function deleteGalleryImage(imageUrls: string[]): Promise<void> {
 	if (!user) throw new Error('Not authenticated')
 
 	const { error } = await supabase
-		.from('profiles')
+		.from('users')
 		.update({
 			gallery_images: imageUrls,
 			updated_at: new Date().toISOString(),
@@ -66,32 +115,4 @@ export async function deleteGalleryImage(imageUrls: string[]): Promise<void> {
 		.eq('id', user.id)
 
 	if (error) throw error
-}
-
-export async function uploadImage(file: File): Promise<string> {
-	const supabase = await createClient()
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser()
-	if (!user) throw new Error('Not authenticated')
-
-	// Convert file to array buffer
-	const arrayBuffer = await file.arrayBuffer()
-	const fileExt = file.name.split('.').pop()
-	const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`
-
-	const { data, error } = await supabase.storage
-		.from('profile_pictures')
-		.upload(fileName, arrayBuffer, {
-			contentType: file.type,
-		})
-
-	if (error) throw error
-
-	const {
-		data: { publicUrl },
-	} = supabase.storage.from('profile_pictures').getPublicUrl(data.path)
-
-	return publicUrl
 }

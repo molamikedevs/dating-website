@@ -1,11 +1,12 @@
 'use client'
 
-import { Camera } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Profile } from '@/types'
-import { uploadImage } from '@/lib/actions/action.profile'
+import { uploadToBucket } from '@/lib/actions/action.profile'
 import { toast } from 'sonner'
+import { useState } from 'react'
+import { Camera, Loader } from '../icons'
 
 interface ProfileHeaderProps {
 	draft: Profile
@@ -26,28 +27,33 @@ const ProfileHeader = ({
 	onCancel,
 	onDraftChange,
 }: ProfileHeaderProps) => {
+	const [isUploadingImage, setIsUploadingImage] = useState(false)
+
 	const handleProfilePictureChange = async (
 		e: React.ChangeEvent<HTMLInputElement>
 	) => {
 		if (!e.target.files?.length) return
 		const file = e.target.files[0]
+		setIsUploadingImage(true)
 
 		try {
-			const url = await uploadImage(file)
-			const updated = { ...draft, profile_picture: url }
+			const avatarUrl = await uploadToBucket(file, 'profile_avatars')
+			const updated = { ...draft, avatar_url: avatarUrl }
 			onDraftChange(updated)
 			toast.success('Profile picture updated!')
 		} catch {
 			toast.error('Failed to update profile picture.')
+		} finally {
+			setIsUploadingImage(false)
 		}
 	}
 
 	return (
 		<div className="bg-white dark:bg-neutral-900 shadow-lg rounded-2xl p-6 flex flex-col items-center">
 			<div className="relative w-32 h-32">
-				{draft.profile_picture ? (
+				{draft.avatar_url ? (
 					<Image
-						src={draft.profile_picture}
+						src={draft.avatar_url}
 						alt={draft.name || 'Profile'}
 						fill
 						className="rounded-full object-cover border-4 border-pink-500 shadow"
@@ -60,22 +66,26 @@ const ProfileHeader = ({
 					</div>
 				)}
 
-				{isEditing && (
+				{isEditing ? (
 					<label className="absolute bottom-0 right-0 bg-pink-600 hover:bg-pink-700 p-2 rounded-full cursor-pointer shadow-md">
-						<Camera className="text-white" size={18} />
+						{isUploadingImage ? (
+							<Loader className="text-white animate-spin" size={18} />
+						) : (
+							<Camera className="text-white" size={18} />
+						)}
 						<input
 							type="file"
 							className="hidden"
 							onChange={handleProfilePictureChange}
 						/>
 					</label>
-				)}
+				) : null}
 			</div>
 
-			<h1 className="text-2xl font-bold mt-4 text-gray-900 dark:text-white">
+			<h1 className="text-2xl font-bold mt-4 text-gray-900 dark:text-white capitalize">
 				{draft.name}
 			</h1>
-			<p className="text-gray-600 dark:text-gray-300">
+			<p className="text-muted-foreground capitalize">
 				{draft.age} • {draft.gender}
 			</p>
 

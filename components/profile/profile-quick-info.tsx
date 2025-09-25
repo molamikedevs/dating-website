@@ -33,42 +33,37 @@ const ProfileQuickInfo = ({
 	return (
 		<div className="bg-white dark:bg-neutral-900 shadow rounded-xl p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
 			<div>
-				<Label className="mb-1 block">Name</Label>
+				<Label className="mb-2 block">Name</Label>
 				<Input value={draft?.name} disabled />
 			</div>
 
 			<div>
-				<Label className="mb-1 block">Age</Label>
+				<Label className="mb-2 block">Age</Label>
 				<Input value={String(draft?.age)} disabled />
 			</div>
 
 			<div>
 				<LocationInput
 					value={location}
-					onChange={value =>
-						draft &&
-						onDraftChange('location', value)
-					}
+					onChange={value => draft && onDraftChange('location', value)}
 					disabled={!isEditing}
 					placeholder="e.g., Baku, Azerbaijan"
 				/>
 			</div>
 
 			<div>
-				<Label className="mb-1 block">Occupation</Label>
+				<Label className="mb-2 block">Occupation</Label>
 				<Input
 					value={occupation || ''}
 					placeholder="e.g., Software Engineer"
-					onChange={e =>
-						draft && onDraftChange('occupation', e.target.value)
-					}
+					onChange={e => draft && onDraftChange('occupation', e.target.value)}
 					disabled={!isEditing}
 					className="dark:bg-neutral-800 dark:text-white"
 				/>
 			</div>
 
 			<div>
-				<Label className="mb-1 block">Height (cm)</Label>
+				<Label className="mb-2 block">Height (cm)</Label>
 				<Input
 					type="number"
 					placeholder="e.g., 170"
@@ -82,39 +77,35 @@ const ProfileQuickInfo = ({
 			</div>
 
 			<div>
-				<Label className="mb-1 block">Body Type</Label>
+				<Label className="mb-2 block">Body Type</Label>
 				{isEditing ? (
 					<Select
 						value={body_type || undefined}
-						onValueChange={v =>
-							draft &&
-							onDraftChange('body_type', v)
-						}>
-						<SelectTrigger className="dark:bg-neutral-800 dark:text-white">
+						onValueChange={v => draft && onDraftChange('body_type', v)}>
+						<SelectTrigger>
 							<SelectValue placeholder="Select body type" />
 						</SelectTrigger>
 						<SelectContent>
 							{bodyTypes.map(b => (
-								<SelectItem key={b} value={b}>
+								<SelectItem key={b} value={b} className="uppercase">
 									{b}
 								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
 				) : (
-					<p className="text-gray-700 dark:text-gray-200">{body_type || '—'}</p>
+					<p className="text-muted-foreground dark:text-neutral-500 font-semibold text-sm">
+						{body_type || '—'}
+					</p>
 				)}
 			</div>
 
 			<div>
-				<Label className="mb-1 block">Orientation</Label>
+				<Label className="mb-2 block">Orientation</Label>
 				{isEditing ? (
 					<Select
 						value={orientation || undefined}
-						onValueChange={v =>
-							draft &&
-							onDraftChange('orientation', v)
-						}>
+						onValueChange={v => draft && onDraftChange('orientation', v)}>
 						<SelectTrigger className="dark:bg-neutral-800 dark:text-white">
 							<SelectValue placeholder="Select orientation" />
 						</SelectTrigger>
@@ -127,21 +118,18 @@ const ProfileQuickInfo = ({
 						</SelectContent>
 					</Select>
 				) : (
-					<p className="text-gray-700 dark:text-gray-200">
+					<p className="text-muted-foreground dark:text-neutral-500 font-semibold text-sm">
 						{orientation || '—'}
 					</p>
 				)}
 			</div>
 
 			<div>
-				<Label className="mb-1 block">Education</Label>
+				<Label className="mb-2 block">Education</Label>
 				{isEditing ? (
 					<Select
 						value={education || undefined}
-						onValueChange={v =>
-							draft &&
-							onDraftChange('education', v)
-						}>
+						onValueChange={v => draft && onDraftChange('education', v)}>
 						<SelectTrigger className="dark:bg-neutral-800 dark:text-white">
 							<SelectValue placeholder="Select education" />
 						</SelectTrigger>
@@ -154,7 +142,9 @@ const ProfileQuickInfo = ({
 						</SelectContent>
 					</Select>
 				) : (
-					<p className="text-gray-700 dark:text-gray-200">{education || '—'}</p>
+					<p className="text-muted-foreground dark:text-neutral-500 font-semibold text-sm">
+						{education || '—'}
+					</p>
 				)}
 			</div>
 		</div>

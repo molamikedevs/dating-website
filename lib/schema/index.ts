@@ -35,7 +35,7 @@ export const educationOpts = [
 	'Postgraduate',
 ] as const
 
-export const genderOpts = ['Male', 'Female'] as const
+export const genderOpts = ['Male', 'Female', 'Other'] as const
 
 export const interestsList = [
 	'Art',
@@ -85,6 +85,18 @@ export const languagesList = [
 	'Hindi',
 ] as const
 
+export const quickFormSchema = z.object({
+	name: z.string().min(2).max(100),
+	age: z
+		.number()
+		.min(18, { message: 'Must be at least 18 years old' })
+		.max(120, { message: 'Maximum age is 120 years' })
+		.refine(age => age >= 18 && age <= 120, {
+			message: 'Age must be between 18 and 120 years',
+		}),
+	gender: z.enum(genderOpts),
+	relationship_goals: z.enum(relationshipGoals),
+})
 
 /* ---------- Full Profile form schema ---------- */
 export const formSchema = z.object({

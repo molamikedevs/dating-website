@@ -1,8 +1,6 @@
-import { formSchema } from "@/lib/schema"
-import { User } from "@supabase/supabase-js"
-import { SVGProps } from "react"
-import z from "zod"
-
+import { formSchema, quickFormSchema } from '@/lib/schema'
+import { SVGProps } from 'react'
+import z from 'zod'
 
 // Reusable SVG icon props type
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
@@ -11,7 +9,7 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 
 // Infer the form values type from the Zod schema
 export type FormValues = z.infer<typeof formSchema>
-
+export type QuickFormValues = z.infer<typeof quickFormSchema>
 
 // Props for the MobileNav component
 export interface MobileNavProps {
@@ -21,7 +19,6 @@ export interface MobileNavProps {
 	profile: Profile | null
 	unreadCountsByType: { message: number; like: number }
 }
-
 
 // Props for the AuthForm component
 export interface AuthFormState {
@@ -35,10 +32,9 @@ export interface AuthFormState {
 }
 
 // Props for the AuthForm mode component
-export interface AuthFormProps {
+export interface AuthFormModeProps {
 	mode: 'login' | 'register'
 }
-
 
 // Define action types for the AuthForm reducer
 export type AuthFormAction =
@@ -50,12 +46,10 @@ export type AuthFormAction =
 	| { type: 'SET_ACCEPTED_TERMS'; payload: boolean }
 	| { type: 'SET_SHOW_PASSWORD'; payload: boolean }
 
-
-	// Interface for a user profile attributes
-	export interface Profile {
+// Interface for a user profile attributes
+export interface Profile {
 	id: string
 	name: string
-	email: string
 	age: number
 	gender: string
 	bio: string
@@ -70,7 +64,7 @@ export type AuthFormAction =
 	zodiac_sign?: string
 	smoking?: string
 	drinking?: string
-	relationship_goals?: string
+	children?: string
 	education?: string
 	occupation?: string
 	gallery_images?: string[]
@@ -80,25 +74,31 @@ export type AuthFormAction =
 	is_online?: boolean
 	is_verified?: boolean
 	avatar_url: string
-	location_lat: number
-	location_lng: number
 }
 
 // Interface for user preferences within a profile
 interface UserPreferences {
 	date_range: {
-		min: number;
-		max: number;
-	};
-	distance: number;
-	gender_preference: 'male' | 'female' | 'other';
+		min: number
+		max: number
+	}
+	distance: number
+	gender_preference: 'male' | 'female' | 'other'
 }
 
-// Define the shape of the AuthContext
+export interface UserSession {
+	user: {
+		id: string
+		email: string
+		avatar_url: string | null
+	} | null
+	access_token: string | null
+}
+
 export interface AuthContextType {
-	user: User | null
+	session: UserSession | null
 	profile: Profile | null
 	loading: boolean
 	signOut: () => Promise<void>
+	refreshProfile: (userId: string) => Promise<Profile | null>
 }
-

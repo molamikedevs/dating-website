@@ -1,3 +1,4 @@
+// components/navbar.tsx
 'use client'
 
 import Link from 'next/link'
@@ -14,7 +15,7 @@ import { useAuth } from '@/context/auth-context'
 import { useTheme } from 'next-themes'
 
 const Navbar = () => {
-	const { profile, loading, } = useAuth()
+	const { profile, loading } = useAuth()
 	const unreadCountsByType = { message: 0, like: 0 }
 	const pathname = usePathname()
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -25,18 +26,18 @@ const Navbar = () => {
 		setMounted(true)
 	}, [])
 
-	// While checking auth state, don't render the navbar to avoid flicker
-	if (loading || !mounted) {
+	// Don't render navbar on complete-profile page
+	if (!mounted || pathname === '/complete-profile') {
 		return null
 	}
 
-
-	return (
-		<nav className="w-full sticky top-0 z-50 bg-white dark:bg-black shadow-md px-4 py-3">
-			<div className="max-w-7xl mx-auto flex justify-between items-center">
-				{/* Logo & Brand Name */}
-				<Link href="/">
-					{mounted && (
+	// Show minimal loading state or nothing while auth is loading
+	if (loading) {
+		return (
+			<nav className="w-full sticky top-0 z-50 bg-white dark:bg-black shadow-md px-4 py-3">
+				<div className="max-w-7xl mx-auto flex justify-between items-center">
+					{/* Logo only while loading */}
+					<Link href="/">
 						<Image
 							src={
 								resolvedTheme === 'dark' ? '/logo-dark.png' : '/logo-light.png'
@@ -47,44 +48,65 @@ const Navbar = () => {
 							className="object-contain"
 							priority
 						/>
-					)}
+					</Link>
+					<div className="hidden sm:flex items-center space-x-6">
+						<ThemeSwitch />
+					</div>
+				</div>
+			</nav>
+		)
+	}
+
+	return (
+		<nav className="w-full sticky top-0 z-50 bg-white dark:bg-black shadow-md px-4 py-3">
+			<div className="max-w-7xl mx-auto flex justify-between items-center">
+				{/* Logo */}
+				<Link href={profile ? '/' : '/login'}>
+					<Image
+						src={
+							resolvedTheme === 'dark' ? '/logo-dark.png' : '/logo-light.png'
+						}
+						alt="Logo"
+						width={150}
+						height={100}
+						className="object-contain"
+						priority
+					/>
 				</Link>
 
 				{/* Desktop Nav */}
 				<div className="hidden sm:flex items-center space-x-6">
-					{profile &&
-						siteConfig.navLinks.map(({ href, label }) => {
-							// Determine notification count based on the link
-							let count = 0
-							if (href === '/chats') {
-								count = unreadCountsByType.message
-							} else if (href === '/likes') {
-								count = unreadCountsByType.like
-							}
+					{profile ? (
+						<>
+							{siteConfig.navLinks.map(({ href, label }) => {
+								let count = 0
+								if (href === '/chats') count = unreadCountsByType.message
+								else if (href === '/likes') count = unreadCountsByType.like
 
-							return (
-								<Link
-									key={href}
-									href={href}
-									className={`text-sm font-semibold hover:text-pink-600 transition-colors flex items-center gap-1 ${
-										pathname === href
-											? 'text-pink-600'
-											: 'text-gray-700 dark:text-gray-200'
-									}`}>
-									{label}
-									{count > 0 && (
-										<span className="relative">
-											<Bell size={16} />
-											<span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-												{count}
+								return (
+									<Link
+										key={href}
+										href={href}
+										className={`text-sm font-semibold hover:text-pink-600 transition-colors flex items-center gap-1 ${
+											pathname === href
+												? 'text-pink-600'
+												: 'text-gray-700 dark:text-gray-200'
+										}`}>
+										{label}
+										{count > 0 && (
+											<span className="relative">
+												<Bell size={16} />
+												<span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+													{count}
+												</span>
 											</span>
-										</span>
-									)}
-								</Link>
-							)
-						})}
-
-					{!profile ? (
+										)}
+									</Link>
+								)
+							})}
+							<UserDropdown />
+						</>
+					) : (
 						<>
 							<Link
 								href="/login"
@@ -97,10 +119,7 @@ const Navbar = () => {
 								Register
 							</Link>
 						</>
-					) : (
-						<UserDropdown />
 					)}
-
 					<ThemeSwitch />
 				</div>
 

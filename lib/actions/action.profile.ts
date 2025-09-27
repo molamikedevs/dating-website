@@ -4,6 +4,22 @@
 import { createClient } from '@/lib/supabase/server'
 import { Profile } from '@/types'
 
+export async function getProfile(userId: string) {
+	const supabase = await createClient()
+	const { data: profile, error } = await supabase
+		.from('profiles')
+		.select('*')
+		.eq('id', userId)
+		.single()
+
+	if (error) {
+		return null
+	}
+
+	return profile as Profile
+}
+
+
 export async function getCurrentUserProfile() {
 	const supabase = await createClient()
 	const { data: authData, error: authError } = await supabase.auth.getUser()
@@ -16,7 +32,7 @@ export async function getCurrentUserProfile() {
 	const userId = authData.user.id
 
 	const { data: profile, error: profileError } = await supabase
-		.from('users')
+		.from('profiles')
 		.select('*')
 		.eq('id', userId)
 		.single()
@@ -29,11 +45,36 @@ export async function getCurrentUserProfile() {
 	return profile
 }
 
+// Add this function to your action.profile.ts file
+export async function getNameChangeEligibility(): Promise<{
+	can_change_name: boolean
+	days_remaining: number
+	last_name_change: string | null
+} | null> {
+	const supabase = await createClient()
+
+	try {
+		const { data, error } = await supabase.rpc('get_name_change_eligibility')
+
+		if (error) {
+			console.error('Error checking name change eligibility:', error)
+			return null
+		}
+
+		return data
+	} catch (error) {
+		console.error('Error in getNameChangeEligibility:', error)
+		return null
+	}
+}
+
 // Get profile by ID (for public profiles)
-export async function getProfileById(profileId: string): Promise<Profile | null> {
+export async function getProfileById(
+	profileId: string
+): Promise<Profile | null> {
 	const supabase = await createClient()
 	const { data: profile, error } = await supabase
-		.from('users')
+		.from('profiles')
 		.select('*')
 		.eq('id', profileId)
 		.single()
@@ -56,7 +97,7 @@ export async function updateProfile(
 	if (!user) throw new Error('Not authenticated')
 
 	const { data: profile, error } = await supabase
-		.from('users')
+		.from('profiles')
 		.update({ ...updates, updated_at: new Date().toISOString() })
 		.eq('id', user.id)
 		.select()
@@ -65,7 +106,6 @@ export async function updateProfile(
 	if (error) throw error
 	return profile
 }
-
 
 export async function uploadToBucket(
 	file: File,
@@ -97,7 +137,6 @@ export async function uploadToBucket(
 	return publicUrl
 }
 
-
 export async function deleteGalleryImage(imageUrls: string[]): Promise<void> {
 	const supabase = await createClient()
 
@@ -107,7 +146,7 @@ export async function deleteGalleryImage(imageUrls: string[]): Promise<void> {
 	if (!user) throw new Error('Not authenticated')
 
 	const { error } = await supabase
-		.from('users')
+		.from('profiles')
 		.update({
 			gallery_images: imageUrls,
 			updated_at: new Date().toISOString(),

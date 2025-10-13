@@ -18,17 +18,30 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { useAuth } from '@/context/auth-context'
+import { Profile } from '@/types'
 
+interface UserDropdownProps {
+	profile: Profile | null
+}
 
-export default function UserDropdown() {
+export default function UserDropdown({ profile }: UserDropdownProps) {
 	const router = useRouter()
-	const { profile, signOut } = useAuth()
-	
+	const { signOut } = useAuth()
 
-	const displayName = profile?.name || 'John Doe'
-	const avatarUrl = profile?.avatar_url || ''
+	// Show skeleton while profile is loading
+	if (!profile) {
+		return (
+			<div className="flex items-center gap-2">
+				<div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+				<div className="ml-2 hidden sm:block">
+					<div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+				</div>
+			</div>
+		)
+	}
 
-
+	const displayName = profile.name || 'John Doe'
+	const avatarUrl = profile.avatar_url || ''
 
 	return (
 		<DropdownMenu>

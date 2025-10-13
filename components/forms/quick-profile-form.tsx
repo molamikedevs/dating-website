@@ -1,7 +1,6 @@
-
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useForm, SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,10 +19,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select'
-import { quickFormSchema, relationshipGoals } from '@/lib/schema'
-
-import { QuickFormValues } from '@/types'
+import { genderOpts, quickFormSchema } from '@/lib/schema'
+import { z } from 'zod'
 import CalendarInput from '../calendar'
+import LocationInput from '../location-input'
+
+export type QuickFormValues = z.infer<typeof quickFormSchema>
 
 interface QuickProfileFormProps {
 	onSubmit: (values: QuickFormValues) => void
@@ -40,12 +41,14 @@ export default function QuickProfileForm({
 			name: '',
 			age: 18,
 			gender: 'Male',
-			relationship_goals: 'Friendship',
+			location: '',
+			preferences: 'Female',
 		},
 		mode: 'onBlur',
 	})
 
-	const handleSubmit = (values: QuickFormValues) => {
+	// ✅ Explicitly typed handler fixes the mismatch
+	const handleSubmit: SubmitHandler<QuickFormValues> = values => {
 		onSubmit(values)
 	}
 
@@ -75,7 +78,7 @@ export default function QuickProfileForm({
 						)}
 					/>
 
-					{/* Age */}
+					{/* Date of Birth → Age */}
 					<FormField
 						control={form.control}
 						name="age"
@@ -84,7 +87,7 @@ export default function QuickProfileForm({
 								<FormLabel>Date of Birth</FormLabel>
 								<FormControl>
 									<CalendarInput
-										onChange={date => {
+										onChange={(date: Date) => {
 											const today = new Date()
 											let age = today.getFullYear() - date.getFullYear()
 											const monthDiff = today.getMonth() - date.getMonth()
@@ -128,9 +131,11 @@ export default function QuickProfileForm({
 										</SelectTrigger>
 									</FormControl>
 									<SelectContent>
-										<SelectItem value="Male">Male</SelectItem>
-										<SelectItem value="Female">Female</SelectItem>
-										<SelectItem value="Non-binary">Non-binary</SelectItem>
+										{genderOpts.map(g => (
+											<SelectItem key={g} value={g}>
+												{g}
+											</SelectItem>
+										))}
 									</SelectContent>
 								</Select>
 								<FormMessage />
@@ -138,13 +143,13 @@ export default function QuickProfileForm({
 						)}
 					/>
 
-					{/* Relationship Goals */}
+					{/* Preferences */}
 					<FormField
 						control={form.control}
-						name="relationship_goals"
+						name="preferences"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>Relationship Goals</FormLabel>
+								<FormLabel>Who do you want to match with?</FormLabel>
 								<Select onValueChange={field.onChange} value={field.value}>
 									<FormControl>
 										<SelectTrigger>
@@ -152,13 +157,38 @@ export default function QuickProfileForm({
 										</SelectTrigger>
 									</FormControl>
 									<SelectContent>
-										{relationshipGoals.map(g => (
+										{genderOpts.map(g => (
 											<SelectItem key={g} value={g}>
 												{g}
 											</SelectItem>
 										))}
+										<SelectItem value="Other">Other</SelectItem>
 									</SelectContent>
 								</Select>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					{/* Location */}
+					<FormField
+						control={form.control}
+						name="location"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Location</FormLabel>
+								<FormControl>
+									<div>
+										<Input
+											{...field}
+											onChange={e => field.onChange(e.target.value)}
+										/>
+										<LocationInput
+											value={field.value}
+											onChange={field.onChange}
+										/>
+									</div>
+								</FormControl>
 								<FormMessage />
 							</FormItem>
 						)}

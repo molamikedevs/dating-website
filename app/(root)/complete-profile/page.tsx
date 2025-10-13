@@ -1,27 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+
 import { toast } from 'sonner'
 import { QuickFormValues } from '@/types'
 import QuickProfileForm from '@/components/forms/quick-profile-form'
 import { useAuth } from '@/context/auth-context'
 import { createClient } from '@/lib/supabase/client'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function CompleteProfilePage() {
 	const [isLoading, setIsLoading] = useState(false)
 	const router = useRouter()
 	const { session, refreshProfile } = useAuth()
 	const supabase = createClient()
-	const pathname = usePathname()
 
-	// Set dynamic page title
-	useEffect(() => {
-		const title = 'Complete Your Profile'
-		document.title = `${title} - NearMe`
-	}, [pathname])
-
-	const handleSubmit = async (values: Partial<QuickFormValues>) => {
+	const handleSubmit = async (values: QuickFormValues) => {
 		if (!session) {
 			toast('No user session found!')
 			return
@@ -29,16 +23,28 @@ export default function CompleteProfilePage() {
 
 		setIsLoading(true)
 		try {
+			const preferencesData = {
+				distance: 25, // Default distance for basic users
+				age_range: {
+					min: 18, // Default minimum age
+					max: 50, // Default maximum age
+				},
+				gender_preference:
+					values.preferences === 'Other' ? [] : [values.preferences],
+			}
+
 			const { error } = await supabase.from('profiles').upsert({
 				id: session?.user?.id,
 				name: values.name,
 				age: values.age,
 				gender: values.gender,
-				relationship_goals: values.relationship_goals,
+				location: values.location,
+				preferences: preferencesData, // storing as structured object
 				updated_at: new Date().toISOString(),
 			})
 
 			if (error) throw error
+
 			if (session.user) {
 				await refreshProfile(session.user.id)
 			}
@@ -47,7 +53,7 @@ export default function CompleteProfilePage() {
 			router.push('/')
 			router.refresh()
 		} catch (error) {
-			console.log(error)
+			console.error('Error creating profile:', error)
 			toast('Something went wrong. Please try again.')
 		} finally {
 			setIsLoading(false)

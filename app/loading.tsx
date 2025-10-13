@@ -1,8 +1,8 @@
 'use client'
 
-import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { Loader } from '@/components/icons'
 
 export default function Loading() {
 	const [isLoading, setIsLoading] = useState(false)
@@ -29,7 +29,7 @@ export default function Loading() {
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
 			<div className="flex flex-col items-center gap-3">
-				<Loader2 className="h-8 w-8 animate-spin text-pink-600" />
+				<Loader className="h-8 w-8 animate-spin text-pink-600" />
 				<p className="text-sm text-muted-foreground">Loading...</p>
 			</div>
 		</div>

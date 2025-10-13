@@ -13,6 +13,7 @@ const MobileNav = ({
 	pathname,
 	profile,
 	unreadCountsByType,
+	loading,
 }: MobileNavProps) => {
 	return (
 		<div
@@ -20,55 +21,44 @@ const MobileNav = ({
 				isOpen ? 'max-h-[500px] opacity-100 mt-3' : 'max-h-0 opacity-0'
 			}`}>
 			<div className="flex flex-col items-start space-y-3 px-2 py-4">
-				{profile &&
-					siteConfig.navLinks.map(({ href, label }) => {
-						// Determine notification count based on the link
-						let count = 0
-						if (href === '/chats') {
-							count = unreadCountsByType.message
-						} else if (href === '/likes') {
-							count = unreadCountsByType.like
-						}
+				{/* Always show navigation links */}
+				{siteConfig.navLinks.map(({ href, label }) => {
+					// Determine notification count based on the link
+					let count = 0
+					if (href === '/chats') {
+						count = unreadCountsByType.message
+					} else if (href === '/likes') {
+						count = unreadCountsByType.like
+					}
 
-						return (
-							<Link
-								key={href}
-								href={href}
-								className={`text-base font-medium transition-colors flex items-center gap-2 ${
-									pathname === href
-										? 'text-pink-600'
-										: 'text-gray-700 dark:text-gray-200 hover:text-pink-500'
-								}`}
-								onClick={() => onClose()}>
-								{label}
-								{count > 0 && (
-									<span className="relative">
-										<Bell size={16} />
-										<span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-											{count}
-										</span>
+					return (
+						<Link
+							key={href}
+							href={href}
+							className={`text-base font-medium transition-colors flex items-center gap-2 ${
+								pathname === href
+									? 'text-pink-600'
+									: 'text-gray-700 dark:text-gray-200 hover:text-pink-500'
+							}`}
+							onClick={() => onClose()}>
+							{label}
+							{count > 0 && (
+								<span className="relative">
+									<Bell size={16} />
+									<span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+										{count}
 									</span>
-								)}
-							</Link>
-						)
-					})}
-
-				{!profile ? (
-					<>
-						<Link
-							href="/login"
-							className="text-gray-700 dark:text-gray-200 hover:text-pink-600 text-base font-medium"
-							onClick={() => onClose()}>
-							Login
+								</span>
+							)}
 						</Link>
-						<Link
-							href="/register"
-							className="text-base text-white px-4 py-2 rounded-full font-medium bg-gradient-to-r from-pink-900 via-pink-600 to-pink-900 hover:from-pink-600 hover:to-pink-800 transition"
-							onClick={() => onClose()}>
-							Register
-						</Link>
-					</>
-				) : (
+					)
+				})}
+				{/* Auth-dependent content */}
+				{loading ? (
+					<div className="flex items-center justify-center py-2">
+						<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pink-600"></div>
+					</div>
+				) : profile ? (
 					<>
 						<Link
 							href="/profile"
@@ -84,8 +74,22 @@ const MobileNav = ({
 						</Link>
 						<SignoutButton />
 					</>
-				)}
-
+				) : (
+					<>
+						<Link
+							href="/login"
+							className="text-gray-700 dark:text-gray-200 hover:text-pink-600 text-base font-medium"
+							onClick={() => onClose()}>
+							Login
+						</Link>
+						<Link
+							href="/register"
+							className="text-base text-white px-4 py-2 rounded-full font-medium bg-gradient-to-r from-pink-900 via-pink-600 to-pink-900 hover:from-pink-600 hover:to-pink-800 transition"
+							onClick={() => onClose()}>
+							Register
+						</Link>
+					</>
+				)}{' '}
 				<div className="pt-2">
 					<ThemeSwitch />
 				</div>

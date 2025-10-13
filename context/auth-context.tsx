@@ -1,7 +1,13 @@
 // context/auth-context.tsx
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import {
+	createContext,
+	useContext,
+	useEffect,
+	useState,
+	useCallback,
+} from 'react'
 import { AuthContextType, Profile, UserSession } from '@/types'
 import { createClient } from '@/lib/supabase/client'
 import { getProfile } from '@/lib/actions/action.profile'
@@ -17,17 +23,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const router = useRouter()
 
 	// Function to refresh profile data
-	const refreshProfile = async (userId: string) => {
+	const refreshProfile = useCallback(async (userId: string) => {
+		console.log('🔄 Starting profile fetch for user:', userId)
+		const startTime = Date.now()
+
 		try {
 			const userProfile = await getProfile(userId)
+			const endTime = Date.now()
+			console.log(`✅ Profile fetch completed in ${endTime - startTime}ms`)
+
 			setProfile(userProfile)
 			return userProfile
 		} catch (error) {
-			console.error('Error refreshing profile:', error)
+			const endTime = Date.now()
+			console.error(
+				`❌ Profile fetch failed in ${endTime - startTime}ms:`,
+				error
+			)
 			setProfile(null)
 			return null
 		}
-	}
+	}, [])
 
 	useEffect(() => {
 		const initializeAuth = async () => {
@@ -55,15 +71,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 						access_token: authSession.access_token,
 					}
 					setSession(newSession)
+					setLoading(false) // Set loading false immediately after session
 
-					// Load profile
-					await refreshProfile(authSession.user.id)
+					// Load profile asynchronously without blocking UI
+					refreshProfile(authSession.user.id)
 				}
 			} catch (error) {
 				console.error('Error in auth initialization:', error)
 				setSession(null)
 				setProfile(null)
-			} finally {
 				setLoading(false)
 			}
 		}
@@ -74,8 +90,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		const {
 			data: { subscription },
 		} = supabase.auth.onAuthStateChange(async (event, authSession) => {
-			setLoading(true)
-
 			if (authSession) {
 				const newSession = {
 					user: {
@@ -86,22 +100,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 					access_token: authSession.access_token,
 				}
 				setSession(newSession)
+				setLoading(false) // Immediately show UI when session exists
 
-				// Refresh profile on auth changes
-				await refreshProfile(authSession.user.id)
-
-				// Refresh the page to update server components
-				router.refresh()
+				// Load profile asynchronously
+				if (event === 'SIGNED_IN') {
+					refreshProfile(authSession.user.id)
+					router.refresh()
+				}
 			} else {
 				setSession(null)
 				setProfile(null)
+				setLoading(false)
 			}
-
-			setLoading(false)
 		})
 
 		return () => subscription.unsubscribe()
-	}, [supabase, router])
+	}, [supabase, router, refreshProfile])
 
 	const signOut = async () => {
 		setLoading(true)

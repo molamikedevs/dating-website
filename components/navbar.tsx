@@ -1,4 +1,3 @@
-// components/navbar.tsx
 'use client'
 
 import Link from 'next/link'
@@ -15,7 +14,7 @@ import { useAuth } from '@/context/auth-context'
 import { useTheme } from 'next-themes'
 
 const Navbar = () => {
-	const { profile, loading } = useAuth()
+	const { profile, loading, session } = useAuth()
 	const unreadCountsByType = { message: 0, like: 0 }
 	const pathname = usePathname()
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -27,35 +26,12 @@ const Navbar = () => {
 	}, [])
 
 	// Don't render navbar on complete-profile page
-	if (!mounted || pathname === '/complete-profile') {
+	if (mounted && pathname === '/complete-profile') {
 		return null
 	}
 
-	// Show minimal loading state or nothing while auth is loading
-	if (loading) {
-		return (
-			<nav className="w-full sticky top-0 z-50 bg-white dark:bg-black shadow-md px-4 py-3">
-				<div className="max-w-7xl mx-auto flex justify-between items-center">
-					{/* Logo only while loading */}
-					<Link href="/">
-						<Image
-							src={
-								resolvedTheme === 'dark' ? '/logo-dark.png' : '/logo-light.png'
-							}
-							alt="Logo"
-							width={150}
-							height={100}
-							className="object-contain"
-							priority
-						/>
-					</Link>
-					<div className="hidden sm:flex items-center space-x-6">
-						<ThemeSwitch />
-					</div>
-				</div>
-			</nav>
-		)
-	}
+	// Use fallback theme if not mounted yet
+	const currentTheme = mounted ? resolvedTheme : 'light'
 
 	return (
 		<nav className="w-full sticky top-0 z-50 bg-white dark:bg-black shadow-md px-4 py-3">
@@ -63,9 +39,7 @@ const Navbar = () => {
 				{/* Logo */}
 				<Link href={profile ? '/' : '/login'}>
 					<Image
-						src={
-							resolvedTheme === 'dark' ? '/logo-dark.png' : '/logo-light.png'
-						}
+						src={currentTheme === 'dark' ? '/logo-dark.png' : '/logo-light.png'}
 						alt="Logo"
 						width={150}
 						height={100}
@@ -76,36 +50,40 @@ const Navbar = () => {
 
 				{/* Desktop Nav */}
 				<div className="hidden sm:flex items-center space-x-6">
-					{profile ? (
-						<>
-							{siteConfig.navLinks.map(({ href, label }) => {
-								let count = 0
-								if (href === '/chats') count = unreadCountsByType.message
-								else if (href === '/likes') count = unreadCountsByType.like
+					{/* Always show navigation links - they update when auth state changes */}
+					{siteConfig.navLinks.map(({ href, label }) => {
+						let count = 0
+						if (href === '/chats') count = unreadCountsByType.message
+						else if (href === '/likes') count = unreadCountsByType.like
 
-								return (
-									<Link
-										key={href}
-										href={href}
-										className={`text-sm font-semibold hover:text-pink-600 transition-colors flex items-center gap-1 ${
-											pathname === href
-												? 'text-pink-600'
-												: 'text-gray-700 dark:text-gray-200'
-										}`}>
-										{label}
-										{count > 0 && (
-											<span className="relative">
-												<Bell size={16} />
-												<span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-													{count}
-												</span>
-											</span>
-										)}
-									</Link>
-								)
-							})}
-							<UserDropdown />
-						</>
+						return (
+							<Link
+								key={href}
+								href={href}
+								className={`text-sm font-semibold hover:text-pink-600 transition-colors flex items-center gap-1 ${
+									pathname === href
+										? 'text-pink-600'
+										: 'text-gray-700 dark:text-gray-200'
+								}`}>
+								{label}
+								{count > 0 && (
+									<span className="relative">
+										<Bell size={16} />
+										<span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+											{count}
+										</span>
+									</span>
+								)}
+							</Link>
+						)
+					})}
+
+					{/* Auth-dependent items - show based on current auth state */}
+					{loading ? (
+						// Show a small loading indicator for auth section only
+						<div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+					) : session ? (
+						<UserDropdown profile={profile} />
 					) : (
 						<>
 							<Link
@@ -141,6 +119,7 @@ const Navbar = () => {
 				pathname={pathname}
 				profile={profile}
 				unreadCountsByType={unreadCountsByType}
+				loading={loading}
 			/>
 		</nav>
 	)

@@ -18,6 +18,7 @@ export interface MobileNavProps {
 	pathname: string
 	profile: Profile | null
 	unreadCountsByType: { message: number; like: number }
+	loading: boolean
 }
 
 // Props for the AuthForm component
@@ -58,6 +59,7 @@ export interface Profile {
 	height: number
 	body_type?: string
 	orientation?: string
+	relationship_goals?: string
 	interests: string[]
 	hobbies: string[]
 	languages: string[]
@@ -77,13 +79,13 @@ export interface Profile {
 }
 
 // Interface for user preferences within a profile
-interface UserPreferences {
-	date_range: {
+export interface UserPreferences {
+	distance: number
+	age_range: {
 		min: number
 		max: number
 	}
-	distance: number
-	gender_preference: 'male' | 'female' | 'other'
+	gender_preference: string[]
 }
 
 export interface UserSession {

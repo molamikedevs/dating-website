@@ -17,6 +17,7 @@ export default function ProfileCard({ profile }: { profile: Profile }) {
 		return <Spinner />
 	}
 
+	// Save changes to profile
 	const handleSave = async () => {
 		setIsSaving(true)
 		try {
@@ -32,11 +33,13 @@ export default function ProfileCard({ profile }: { profile: Profile }) {
 		}
 	}
 
+	// Discard changes and reset draft to original profile
 	const handleCancel = () => {
 		setDraft(profile)
 		setIsEditing(false)
 	}
 
+	// Helper to update specific fields in the draft profile
 	const patchDraft = <K extends keyof Profile>(key: K, value: Profile[K]) => {
 		setDraft(prev => ({ ...prev, [key]: value }))
 	}
@@ -65,6 +68,7 @@ export default function ProfileCard({ profile }: { profile: Profile }) {
 					isEditing={isEditing}
 					onDraftChange={patchDraft}
 				/>
+
 				<ProfileHobbiesInterest
 					draft={draft}
 					isEditing={isEditing}

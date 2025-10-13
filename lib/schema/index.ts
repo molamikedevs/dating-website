@@ -37,6 +37,7 @@ export const educationOpts = [
 
 export const genderOpts = ['Male', 'Female', 'Other'] as const
 
+
 export const interestsList = [
 	'Art',
 	'Books',
@@ -95,7 +96,8 @@ export const quickFormSchema = z.object({
 			message: 'Age must be between 18 and 120 years',
 		}),
 	gender: z.enum(genderOpts),
-	relationship_goals: z.enum(relationshipGoals),
+	location: z.string().min(1).max(100),
+	preferences: z.enum(genderOpts).or(z.literal('Other')),
 })
 
 /* ---------- Full Profile form schema ---------- */
@@ -105,6 +107,7 @@ export const formSchema = z.object({
 	drinking: z.enum(drinkingOpts),
 	body_type: z.enum(bodyTypes),
 	education: z.enum(educationOpts),
+	relationshipGoals: z.array(z.enum(relationshipGoals)),
 	bio: z.string().max(500),
 	height: z.number().min(120).max(250),
 	zodiac_sign: z.string().min(1).max(50),
